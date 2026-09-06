@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#154F48">
+<title>بازارچی</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+
+<!-- ===================================================================
+  پیکربندی Firebase خودتان را اینجا جایگزین کنید.
+  این مقادیر را از Firebase Console > Project settings > SDK setup می‌گیرید.
+=================================================================== -->
+<script>
+  window.FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCnLvWPhY4g430q2hKG4ztWzOpLDvR7AQo",
+    authDomain: "bazarchi-969a5.firebaseapp.com",
+    projectId: "bazarchi-969a5",
+    storageBucket: "bazarchi-969a5.firebasestorage.app",
+    messagingSenderId: "139683555969",
+    appId: "1:139683555969:web:e5594667ab54a705c53b80"
+  };
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+  :root{
+    --ink:#16232E; --bg:#EEF2F0; --panel:#FFFFFF;
+    --teal:#1F6F65; --teal-deep:#154F48; --amber:#C99A3B;
+    --line:#D7DED9; --text:#1D2422; --muted:#5C6B66; --danger:#B5533C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{font-family:'Vazirmatn',sans-serif;direction:rtl;color:var(--text);font-size:15px;line-height:1.6;padding-bottom:50px;min-height:100vh;}
+  h1,h2,h3{font-weight:700;margin:0;}
+  input,select,textarea{font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:3px;padding:9px 10px;background:#fff;color:var(--text);width:100%;}
+  input:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px;}
+  label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:4px;}
+  .field{margin-bottom:10px;}
+  .btn{font-family:inherit;font-weight:600;font-size:13.5px;border:none;border-radius:3px;padding:10px 16px;cursor:pointer;}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-amber{background:var(--amber);color:#1D2422;}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--text);}
+  .btn-danger{background:none;border:1px solid var(--danger);color:var(--danger);}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  #authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);padding:20px;}
+  .auth-card{background:var(--panel);border-radius:6px;padding:26px 22px;width:100%;max-width:360px;}
+  .auth-logo{width:50px;height:50px;background:var(--teal-deep);border-radius:8px;margin:0 auto 12px auto;}
+  .auth-title{text-align:center;font-size:18px;margin-bottom:4px;}
+  .auth-sub{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:18px;}
+  .auth-error{color:var(--danger);font-size:12.5px;margin-bottom:8px;min-height:14px;}
+  .auth-tabs{display:flex;gap:6px;margin-bottom:16px;}
+  .auth-tab{flex:1;padding:8px;text-align:center;border:1px solid var(--line);border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);}
+  .auth-tab.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .role-pick{display:flex;gap:8px;margin-bottom:12px;}
+  .role-pick label{flex:1;border:1px solid var(--line);border-radius:4px;padding:10px 8px;text-align:center;font-size:12.5px;cursor:pointer;color:var(--text);}
+  .role-pick input{width:auto;margin-left:6px;}
+  .role-pick input:checked + span{font-weight:700;}
+
+  .top{background:var(--ink);color:#F2F4F1;padding:16px 16px 0 16px;position:sticky;top:0;z-index:5;}
+  .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .top-row h1{font-size:18px;}
+  .top-row .sub{font-size:11px;color:#9FB0AC;}
+  .logout-btn{background:none;border:1px solid rgba(255,255,255,.25);color:#EAEFEC;font-size:12px;padding:5px 10px;border-radius:3px;cursor:pointer;font-family:inherit;}
+  .tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.12);}
+  .tab-btn{flex:1;background:none;border:none;color:#B7C2BE;font-family:inherit;font-size:12.5px;font-weight:600;padding:10px 2px 12px 2px;cursor:pointer;border-bottom:2px solid transparent;}
+  .tab-btn.active{color:#fff;border-bottom-color:var(--amber);}
+  .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3FBF7F;margin-left:5px;vertical-align:middle;box-shadow:0 0 0 0 rgba(63,191,127,.6);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,191,127,.55);}70%{box-shadow:0 0 0 6px rgba(63,191,127,0);}100%{box-shadow:0 0 0 0 rgba(63,191,127,0);}}
+
+  .wrap{max-width:640px;margin:0 auto;padding:16px 14px 20px 14px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:14px;}
+  .section-label{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px;}
+  .row{display:flex;gap:8px;}
+  .row .field{flex:1;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;}
+  .stat .num{font-size:20px;font-weight:800;color:var(--teal-deep);}
+  .stat .lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+  .list-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line);}
+  .list-item:last-child{border-bottom:none;}
+  .swatch{width:42px;height:42px;border-radius:3px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .item-name{font-weight:600;font-size:14.5px;}
+  .item-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .price-cost{color:var(--danger);} .price-sell{color:var(--teal-deep);} .price-margin{color:var(--amber);}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
+  .badge-pending{background:#F5E9D0;color:#8A6416;}
+  .badge-confirmed{background:#DCEAE7;color:var(--teal-deep);}
+  .badge-purchased{background:#E3E9F5;color:#33477A;}
+  .badge-shipped{background:#DDEEDC;color:#2C6B2A;}
+  .badge-delivered{background:#E8E8E8;color:#4A4A4A;}
+  .badge-waiting{background:#EFE3F5;color:#5B2E7A;}
+  .empty{text-align:center;color:var(--muted);font-size:13.5px;padding:24px 10px;}
+  .item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .item-actions .btn{padding:6px 10px;font-size:12px;}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;}
+  .kv .k{color:var(--muted);}
+  .stack-total{font-weight:700;font-size:15px;padding-top:6px;border-top:1px solid var(--line);margin-top:6px;}
+  .qty-ctrl{display:flex;align-items:center;gap:8px;}
+  .qty-ctrl button{width:26px;height:26px;border-radius:3px;border:1px solid var(--line);background:#fff;font-size:15px;cursor:pointer;line-height:1;}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .hidden{display:none !important;}
+  .hint{font-size:12px;color:var(--muted);background:#F5F7F5;border-right:3px solid var(--teal);padding:8px 10px;margin-bottom:14px;border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo"></div>
+    <div class="auth-title">بازارچی</div>
+    <div class="auth-sub">پلتفرم آنلاین خرید و فروش عمده</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-authtab="login">ورود</div>
+      <div class="auth-tab" data-authtab="signup">ثبت‌نام</div>
+    </div>
+    <div class="auth-error" id="authError"></div>
+
+    <div id="signupRoleWrap" class="role-pick hidden">
+      <label><input type="radio" name="signupRole" value="importer" checked/><span>واردکننده</span></label>
+      <label><input type="radio" name="signupRole" value="customer"/><span>مشتری</span></label>
+    </div>
+    <div id="signupInviteWrap" class="field hidden">
+      <label>کد دعوت</label>
+      <input id="authInvite" placeholder="کدی که از معرف خود گرفته‌اید" style="text-transform:uppercase"/>
+    </div>
+    <div class="field"><label>ایمیل</label><input id="authEmail" type="email" autocomplete="username"/></div>
+    <div class="field"><label>رمز عبور</label><input id="authPass" type="password" autocomplete="current-password"/></div>
+    <button class="btn btn-primary btn-block" id="authSubmit">ورود</button>
+  </div>
+</div>
+
+<div id="appScreen" class="hidden">
+  <div class="top">
+    <div class="top-row">
+      <h1 id="topTitle">بازارچی</h1>
+      <button class="logout-btn" id="logoutBtn">خروج</button>
+    </div>
+    <div class="top-row" style="margin-top:-8px;margin-bottom:10px">
+      <span class="top-row sub"><span class="live-dot"></span>آنلاین و زنده</span>
+    </div>
+    <div class="tabs" id="tabsBar"></div>
+  </div>
+  <div class="wrap" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  if(window.FIREBASE_CONFIG.apiKey === "PASTE_YOUR_API_KEY"){
+    document.getElementById('authError').textContent = 'ابتدا پیکربندی Firebase را در بالای فایل index.html وارد کنید.';
+  }
+  firebase.initializeApp(window.FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentUser = null;
+  let currentRole = null;
+  let unsubscribers = [];
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+  function fmt(n){ return Number(n||0).toLocaleString('fa-IR'); }
+  function colorFor(id){
+    const colors=['#1F6F65','#C99A3B','#33477A','#B5533C','#2C6B2A','#8A6416'];
+    let h=0; for(const c of (id||'x')) h=(h*31+c.charCodeAt(0))>>>0;
+    return colors[h%colors.length];
+  }
+  function initials(name){ return (name||'?').trim().slice(0,2); }
+
+  const statusFlow = ['pending','confirmed','purchased','shipped','delivered'];
+  const statusLabels = {
+    pending:['در انتظار تأیید','badge-pending'],
+    confirmed:['تأیید شد','badge-confirmed'],
+    purchased:['خریداری شد از تأمین‌کننده','badge-purchased'],
+    shipped:['ارسال شد','badge-shipped'],
+    delivered:['تحویل داده شد','badge-delivered'],
+  };
+
+  // ---------------- AUTH SCREEN ----------------
+  let authMode = 'login';
+  document.querySelectorAll('.auth-tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.auth-tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      authMode = t.getAttribute('data-authtab');
+      document.getElementById('signupRoleWrap').classList.toggle('hidden', authMode!=='signup');
+      document.getElementById('signupInviteWrap').classList.toggle('hidden', authMode!=='signup');
+      document.getElementById('authSubmit').textContent = authMode==='signup' ? 'ثبت‌نام' : 'ورود';
+      document.getElementById('authError').textContent='';
+    });
+  });
+
+  document.getElementById('authSubmit').addEventListener('click', async ()=>{
+    const email = document.getElementById('authEmail').value.trim();
+    const pass = document.getElementById('authPass').value;
+    const errEl = document.getElementById('authError');
+    errEl.textContent = '';
+    if(!email || !pass){ errEl.textContent='ایمیل و رمز عبور را وارد کنید.'; return; }
+    try{
+      if(authMode==='signup'){
+        const role = document.querySelector('input[name="signupRole"]:checked').value;
+        const inviteCode = document.getElementById('authInvite').value.trim().toUpperCase();
+        if(!inviteCode){ errEl.textContent='کد دعوت را وارد کنید.'; return; }
+
+        // کد دعوت را قبل از ساخت حساب بررسی می‌کنیم تا حساب بی‌جهت ساخته نشود.
+        const codeRef = db.collection('inviteCodes').doc(inviteCode);
+        const codeSnap = await codeRef.get();
+        if(!codeSnap.exists){ errEl.textContent='کد دعوت پیدا نشد.'; return; }
+        if(codeSnap.data().used){ errEl.textContent='این کد دعوت قبلاً استفاده شده است.'; return; }
+
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        await db.collection('users').doc(cred.user.uid).set({
+          email, role, invitedByCode: inviteCode, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        await codeRef.update({ used:true, usedBy:cred.user.uid, usedByEmail:email, usedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      } else {
+        await auth.signInWithEmailAndPassword(email, pass);
+      }
+    }catch(e){
+      errEl.textContent = translateAuthError(e.code) || e.message;
+    }
+  });
+
+  function translateAuthError(code){
+    const map = {
+      'auth/email-already-in-use':'این ایمیل قبلاً ثبت‌نام کرده — از تب ورود استفاده کنید.',
+      'auth/invalid-email':'ایمیل معتبر نیست.',
+      'auth/weak-password':'رمز عبور باید حداقل ۶ کاراکتر باشد.',
+      'auth/user-not-found':'کاربری با این ایمیل پیدا نشد.',
+      'auth/wrong-password':'رمز عبور اشتباه است.',
+      'auth/invalid-credential':'ایمیل یا رمز عبور اشتباه است.',
+    };
+    return map[code];
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{ auth.signOut(); });
+
+  auth.onAuthStateChanged(async (user)=>{
+    unsubscribers.forEach(u=>u()); unsubscribers=[];
+    if(!user){
+      currentUser=null; currentRole=null;
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('appScreen').classList.add('hidden');
+      return;
+    }
+    currentUser = user;
+    const udoc = await db.collection('users').doc(user.uid).get();
+    if(!udoc.exists){ toast('پروفایل کاربری پیدا نشد'); auth.signOut(); return; }
+    currentRole = udoc.data().role;
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    setupTabsForRole();
+  });
+
+  // ---------------- TABS PER ROLE ----------------
+  const tabsByRole = {
+    admin: [['dashboard','داشبورد'],['pending','در انتظار قیمت'],['orders','سفارش‌ها'],['invites','دعوت دیگران']],
+    importer: [['myproducts','محصولات من'],['invites','دعوت دیگران']],
+    customer: [['catalog','فروشگاه'],['myorders','سفارش‌های من'],['invites','دعوت دیگران']],
+  };
+  const titleByRole = { admin:'بازارچی · مدیر', importer:'بازارچی · واردکننده', customer:'بازارچی · مشتری' };
+
+  function setupTabsForRole(){
+    document.getElementById('topTitle').textContent = titleByRole[currentRole] || 'بازارچی';
+    const bar = document.getElementById('tabsBar');
+    const tabs = tabsByRole[currentRole] || [];
+    bar.innerHTML = tabs.map((t,i)=>`<button class="tab-btn ${i===0?'active':''}" data-tab="${t[0]}">${t[1]}</button>`).join('');
+    bar.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        bar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderTab(btn.getAttribute('data-tab'));
+      });
+    });
+    if(tabs.length) renderTab(tabs[0][0]);
+  }
+
+  function renderTab(tab){
+    unsubscribers.forEach(u=>u()); unsubscribers=[];
+    const root = document.getElementById('content');
+    root.innerHTML = `<div class="empty">در حال بارگذاری...</div>`;
+    if(currentRole==='admin'){
+      if(tab==='dashboard') adminDashboard(root);
+      else if(tab==='pending') adminPending(root);
+      else if(tab==='orders') adminOrders(root);
+    } else if(currentRole==='importer'){
+      importerProducts(root);
+    } else if(currentRole==='customer'){
+      if(tab==='catalog') customerCatalog(root);
+      else if(tab==='myorders') customerOrders(root);
+    }
+    if(tab==='invites') invitesTab(root);
+  }
+
+  // ================= INVITE CODES (all roles) =================
+  function genCode(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for(let i=0;i<7;i++) s += chars[Math.floor(Math.random()*chars.length)];
+    return s;
+  }
+
+  function invitesTab(root){
+    root.innerHTML = `
+      <div class="hint">این کدها را به واردکننده‌ها یا مشتری‌های مورد اعتماد خودتان بدهید تا بتوانند ثبت‌نام کنند. هر کد فقط یک‌بار قابل استفاده است.</div>
+      <div class="card">
+        <button class="btn btn-primary btn-block" id="gen-invite-btn">ساخت کد دعوت جدید</button>
+      </div>
+      <div class="card">
+        <div class="section-label">کدهای ساخته‌شده توسط شما</div>
+        <div id="invite-list"></div>
+      </div>
+    `;
+    root.querySelector('#gen-invite-btn').addEventListener('click', async ()=>{
+      const code = genCode();
+      await db.collection('inviteCodes').doc(code).set({
+        createdBy: currentUser.uid, createdByEmail: currentUser.email,
+        used:false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      toast('کد ساخته شد: ' + code);
+    });
+
+    const un = db.collection('inviteCodes').where('createdBy','==',currentUser.uid).onSnapshot(snap=>{
+      const el = root.querySelector('#invite-list');
+      if(snap.empty){ el.innerHTML = `<div class="empty">هنوز کدی نساخته‌اید.</div>`; return; }
+      const docs = snap.docs.slice().sort((a,b)=>{
+        const ta = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+        const tb = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+        return tb - ta;
+      });
+      el.innerHTML = docs.map(d=>{
+        const c = d.data();
+        const [label, cls] = c.used ? ['استفاده شده','badge-delivered'] : ['فعال — هنوز استفاده نشده','badge-confirmed'];
+        return `
+        <div class="list-item">
+          <div class="swatch" style="background:${colorFor(d.id)}">${d.id.slice(0,2)}</div>
+          <div style="flex:1">
+            <div class="item-name" style="letter-spacing:1px">${d.id} <span class="badge ${cls}">${label}</span></div>
+            ${c.used ? `<div class="item-sub">استفاده‌شده توسط: ${c.usedByEmail||'—'}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    });
+    unsubscribers.push(un);
+  }
+
+  // ================= ADMIN =================
+  function adminDashboard(root){
+    const un1 = db.collection('catalog').onSnapshot(catSnap=>{
+      const un2 = db.collection('orders').onSnapshot(async (ordSnap)=>{
+        const products = catSnap.size;
+        const orders = await Promise.all(ordSnap.docs.map(async (d)=>{
+          const o = d.data(); o.items = await resolveCostPrices(o.items); return o;
+        }));
+        const pendingOrders = orders.filter(o=>o.status!=='delivered').length;
+        const revenue = orders.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.sellPrice*it.qty,0),0);
+        const profit = orders.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+(it.sellPrice-it.costPrice)*it.qty,0),0);
+        root.innerHTML = `
+          <div class="stat-grid">
+            <div class="stat"><div class="num">${fmt(products)}</div><div class="lbl">محصولات فعال</div></div>
+            <div class="stat"><div class="num">${fmt(pendingOrders)}</div><div class="lbl">سفارش‌های در جریان</div></div>
+            <div class="stat"><div class="num">${fmt(revenue)}</div><div class="lbl">مجموع فروش (تومان)</div></div>
+            <div class="stat"><div class="num">${fmt(profit)}</div><div class="lbl">مجموع سود (تومان)</div></div>
+          </div>
+        `;
+      });
+      unsubscribers.push(un2);
+    });
+    unsubscribers.push(un1);
+  }
+
+  function adminPending(root){
+    const un = db.collection('importerProducts').where('sellPrice','==',0).onSnapshot(snap=>{
+      root.innerHTML = `<div class="card"><div class="section-label">محصولاتی که واردکننده‌ها ثبت کرده‌اند و منتظر قیمت‌گذاری شما هستند</div><div id="pend-list"></div></div>`;
+      const el = root.querySelector('#pend-list');
+      if(snap.empty){ el.innerHTML = `<div class="empty">فعلاً محصول جدیدی در انتظار قیمت‌گذاری نیست.</div>`; return; }
+      el.innerHTML = snap.docs.map(d=>{
+        const p = d.data();
+        return `
+        <div class="list-item">
+          <div class="swatch" style="background:${colorFor(d.id)}">${initials(p.name)}</div>
+          <div style="flex:1">
+            <div class="item-name">${p.name}</div>
+            <div class="item-sub">واردکننده: ${p.importerEmail} · موجودی ${fmt(p.stock)} · خرید: <span class="price-cost">${fmt(p.costPrice)}</span></div>
+            <div class="row" style="margin-top:8px">
+              <div class="field" style="margin-bottom:0"><input type="number" placeholder="قیمت فروش" data-priceinput="${d.id}"/></div>
+              <button class="btn btn-primary" data-publish="${d.id}">انتشار در فروشگاه</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      el.querySelectorAll('[data-publish]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const id = btn.getAttribute('data-publish');
+          const input = el.querySelector(`[data-priceinput="${id}"]`);
+          const sellPrice = Number(input.value);
+          if(!sellPrice||sellPrice<=0){ toast('قیمت فروش را وارد کنید'); return; }
+          const p = snap.docs.find(x=>x.id===id).data();
+          await db.collection('importerProducts').doc(id).update({sellPrice});
+          await db.collection('catalog').doc(id).set({
+            name:p.name, sellPrice, stock:p.stock, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          toast('محصول منتشر شد');
+        });
+      });
+    });
+    unsubscribers.push(un);
+  }
+
+  async function resolveCostPrices(items){
+    // Orders come from customers, who can't read cost prices (blocked by security
+    // rules). The admin looks up the real cost from importerProducts here instead.
+    const out = [];
+    for(const it of items){
+      let cost = it.costPrice||0;
+      try{
+        const doc = await db.collection('importerProducts').doc(it.productId).get();
+        if(doc.exists) cost = doc.data().costPrice||0;
+      }catch(e){}
+      out.push({...it, costPrice:cost});
+    }
+    return out;
+  }
+
+  function adminOrders(root){
+    const un = db.collection('orders').orderBy('createdAt','desc').onSnapshot(async (snap)=>{
+      root.innerHTML = `<div class="card"><div class="section-label">سفارش‌های مشتریان (${snap.size})</div><div id="ord-list"></div></div>`;
+      const el = root.querySelector('#ord-list');
+      if(snap.empty){ el.innerHTML = `<div class="empty">هنوز سفارشی ثبت نشده.</div>`; return; }
+      const rows = await Promise.all(snap.docs.map(async (d)=>{
+        const o = d.data();
+        o.items = await resolveCostPrices(o.items);
+        return {id:d.id, o};
+      }));
+      el.innerHTML = rows.map(({id,o})=>{
+        const d = {id};
+        const total = o.items.reduce((s,it)=>s+it.sellPrice*it.qty,0);
+        const cost = o.items.reduce((s,it)=>s+it.costPrice*it.qty,0);
+        const [label,cls] = statusLabels[o.status];
+        const idx = statusFlow.indexOf(o.status);
+        const nextLabel = {pending:'تأیید سفارش',confirmed:'ثبت خرید از تأمین‌کننده',purchased:'ثبت ارسال',shipped:'ثبت تحویل نهایی'}[o.status];
+        return `
+        <div class="list-item">
+          <div style="flex:1">
+            <div class="item-name">${o.customerEmail} <span class="badge ${cls}">${label}</span></div>
+            <div class="item-sub">${o.items.map(it=>it.name+' ×'+it.qty).join('، ')}</div>
+            <div class="item-sub">فروش: <span class="price-sell">${fmt(total)}</span> · خرید: <span class="price-cost">${fmt(cost)}</span> · سود: <span class="price-margin">${fmt(total-cost)}</span></div>
+            ${nextLabel?`<div class="item-actions"><button class="btn btn-amber" data-advance="${d.id}" data-next="${statusFlow[idx+1]}">${nextLabel}</button></div>`:''}
+          </div>
+        </div>`;
+      }).join('');
+      el.querySelectorAll('[data-advance]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          await db.collection('orders').doc(btn.getAttribute('data-advance')).update({status:btn.getAttribute('data-next')});
+        });
+      });
+    });
+    unsubscribers.push(un);
+  }
+
+  // ================= IMPORTER =================
+  function importerProducts(root){
+    root.innerHTML = `
+      <div class="hint">شما فقط محصولات خودتان را می‌بینید. اطلاعات مشتری نهایی هرگز به شما نمایش داده نمی‌شود.</div>
+      <div class="card">
+        <div class="section-label">افزودن محصول جدید</div>
+        <div class="field"><label>نام محصول</label><input id="ip-name" placeholder="مثلاً ژیلت فیوژن ۵ تیغه"/></div>
+        <div class="row">
+          <div class="field"><label>قیمت خرید عمده (تومان)</label><input id="ip-cost" type="number"/></div>
+          <div class="field"><label>موجودی</label><input id="ip-stock" type="number"/></div>
+        </div>
+        <button class="btn btn-primary btn-block" id="ip-add">افزودن</button>
+      </div>
+      <div class="card">
+        <div class="section-label">محصولات ثبت‌شده شما</div>
+        <div id="ip-list"></div>
+      </div>
+    `;
+    root.querySelector('#ip-add').addEventListener('click', async ()=>{
+      const name = root.querySelector('#ip-name').value.trim();
+      const cost = Number(root.querySelector('#ip-cost').value);
+      const stock = Number(root.querySelector('#ip-stock').value)||0;
+      if(!name||!cost){ toast('نام و قیمت خرید را وارد کنید'); return; }
+      await db.collection('importerProducts').add({
+        importerId: currentUser.uid, importerEmail: currentUser.email,
+        name, costPrice:cost, stock, sellPrice:0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      root.querySelector('#ip-name').value='';
+      root.querySelector('#ip-cost').value='';
+      root.querySelector('#ip-stock').value='';
+      toast('محصول ثبت شد و برای قیمت‌گذاری ارسال شد');
+    });
+
+    const un = db.collection('importerProducts').where('importerId','==',currentUser.uid).onSnapshot(snap=>{
+      const el = root.querySelector('#ip-list');
+      if(snap.empty){ el.innerHTML = `<div class="empty">هنوز محصولی ثبت نکرده‌اید.</div>`; return; }
+      el.innerHTML = snap.docs.map(d=>{
+        const p = d.data();
+        const [statusText, cls] = p.sellPrice>0 ? ['در فروشگاه فعال است','badge-delivered'] : ['در انتظار قیمت‌گذاری واسطه','badge-waiting'];
+        return `
+        <div class="list-item">
+          <div class="swatch" style="background:${colorFor(d.id)}">${initials(p.name)}</div>
+          <div style="flex:1">
+            <div class="item-name">${p.name} <span class="badge ${cls}">${statusText}</span></div>
+            <div class="item-sub">قیمت خرید ثبت‌شده: <span class="price-cost">${fmt(p.costPrice)}</span> · موجودی ${fmt(p.stock)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    });
+    unsubscribers.push(un);
+  }
+
+  // ================= CUSTOMER =================
+  let cart = {};
+  function customerCatalog(root){
+    root.innerHTML = `
+      <div class="hint">همه محصولات از منابع مختلف، در یک فروشگاه واحد.</div>
+      <div class="card"><div class="section-label">فروشگاه</div><div id="cat-list"></div></div>
+      <div id="cart-area"></div>
+    `;
+    const un = db.collection('catalog').onSnapshot(snap=>{
+      const products = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      const el = root.querySelector('#cat-list');
+      el.innerHTML = products.length===0 ? `<div class="empty">فعلاً کالایی موجود نیست.</div>` : products.map(p=>`
+        <div class="list-item">
+          <div class="swatch" style="background:${colorFor(p.id)}">${initials(p.name)}</div>
+          <div style="flex:1">
+            <div class="item-name">${p.name}</div>
+            <div class="item-sub">قیمت: <span class="price-sell">${fmt(p.sellPrice)} تومان</span> · موجودی ${fmt(p.stock)}</div>
+          </div>
+          <div class="qty-ctrl">
+            <button data-dec="${p.id}">−</button>
+            <span>${cart[p.id]||0}</span>
+            <button data-inc="${p.id}">+</button>
+          </div>
+        </div>
+      `).join('');
+      el.querySelectorAll('[data-inc]').forEach(b=>b.addEventListener('click', ()=>{
+        const id=b.getAttribute('data-inc'); cart[id]=(cart[id]||0)+1; renderCart(root, products);
+      }));
+      el.querySelectorAll('[data-dec]').forEach(b=>b.addEventListener('click', ()=>{
+        const id=b.getAttribute('data-dec'); cart[id]=Math.max(0,(cart[id]||0)-1); renderCart(root, products);
+      }));
+      renderCart(root, products);
+    });
+    unsubscribers.push(un);
+  }
+
+  function renderCart(root, products){
+    const ids = Object.keys(cart).filter(id=>cart[id]>0);
+    const area = root.querySelector('#cart-area');
+    if(!area) return;
+    if(ids.length===0){ area.innerHTML=''; return; }
+    const total = ids.reduce((s,id)=>{
+      const p = products.find(x=>x.id===id); return p? s+p.sellPrice*cart[id] : s;
+    },0);
+    area.innerHTML = `
+      <div class="card">
+        <div class="section-label">سبد خرید</div>
+        ${ids.map(id=>{
+          const p = products.find(x=>x.id===id); if(!p) return '';
+          return `<div class="kv"><span class="k">${p.name} ×${cart[id]}</span><span>${fmt(p.sellPrice*cart[id])}</span></div>`;
+        }).join('')}
+        <div class="kv stack-total"><span>جمع کل</span><span>${fmt(total)} تومان</span></div>
+        <button class="btn btn-primary btn-block" id="checkout-btn" style="margin-top:10px">ثبت سفارش</button>
+      </div>
+    `;
+    area.querySelector('#checkout-btn').addEventListener('click', async ()=>{
+      // customers can't read cost price (security rules block it) — orders store
+      // productId only for cost; the admin view resolves the real cost price itself.
+      const orderItems = ids.map(id=>{
+        const p = products.find(x=>x.id===id);
+        return {productId:id, name:p.name, qty:cart[id], sellPrice:p.sellPrice, costPrice:0};
+      });
+      await db.collection('orders').add({
+        customerId: currentUser.uid, customerEmail: currentUser.email,
+        items: orderItems, status:'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      cart = {};
+      toast('سفارش ثبت شد');
+      renderTab('catalog');
+    });
+  }
+
+  function customerOrders(root){
+    root.innerHTML = `<div class="card"><div class="section-label">سفارش‌های شما</div><div id="myord-list"></div></div>`;
+    const un = db.collection('orders').where('customerId','==',currentUser.uid).orderBy('createdAt','desc').onSnapshot(snap=>{
+      const el = root.querySelector('#myord-list');
+      if(snap.empty){ el.innerHTML = `<div class="empty">هنوز سفارشی ثبت نکرده‌اید.</div>`; return; }
+      el.innerHTML = snap.docs.map(d=>{
+        const o = d.data();
+        const total = o.items.reduce((s,it)=>s+it.sellPrice*it.qty,0);
+        const [label,cls] = statusLabels[o.status];
+        return `<div class="list-item"><div style="flex:1">
+          <div class="item-name">${o.items.map(it=>it.name+' ×'+it.qty).join('، ')} <span class="badge ${cls}">${label}</span></div>
+          <div class="item-sub">مبلغ: ${fmt(total)} تومان</div>
+        </div></div>`;
+      }).join('');
+    });
+    unsubscribers.push(un);
+  }
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./service-worker.js').catch(()=>{}); });
+  }
+})();
+</script>
+</body>
+</html>

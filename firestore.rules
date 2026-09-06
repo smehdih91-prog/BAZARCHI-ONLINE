@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isImporter() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'importer';
+    }
+
+    // پروفایل کاربران. نقش admin هرگز از داخل اپ قابل ثبت نیست.
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid &&
+                       request.resource.data.role in ['importer', 'customer'];
+      allow update, delete: if isAdmin();
+    }
+
+    // کدهای دعوت: هرکس با اکانتش می‌سازه، بقیه با اون کد ثبت‌نام می‌کنن.
+    // خواندن عمومیه چون باید قبل از ساخت حساب، اعتبار کد چک بشه.
+    match /inviteCodes/{code} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.used == false &&
+                       request.resource.data.used == true;
+      allow delete: if isAdmin() ||
+                       (isSignedIn() && resource.data.createdBy == request.auth.uid && resource.data.used == false);
+    }
+
+    match /importerProducts/{productId} {
+      allow read: if isAdmin() ||
+                     (isSignedIn() && resource.data.importerId == request.auth.uid);
+      allow create: if isImporter() && request.resource.data.importerId == request.auth.uid;
+      allow update, delete: if isAdmin() ||
+                     (isSignedIn() && resource.data.importerId == request.auth.uid);
+    }
+
+    match /catalog/{productId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
+      allow read: if isAdmin() ||
+                     (isSignedIn() && resource.data.customerId == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

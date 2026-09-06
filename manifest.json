@@ -1,0 +1,17 @@
+{
+  "name": "بازارچی",
+  "short_name": "بازارچی",
+  "description": "دفتر مدیریت فروش عمده محصولات بهداشتی",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EEF2F0",
+  "theme_color": "#154F48",
+  "dir": "rtl",
+  "lang": "fa",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
