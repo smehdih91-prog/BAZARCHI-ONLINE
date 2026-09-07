@@ -53,7 +53,7 @@
 
   #authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink);padding:20px;}
   .auth-card{background:var(--panel);border-radius:6px;padding:26px 22px;width:100%;max-width:360px;}
-  .auth-logo{width:50px;height:50px;background:var(--teal-deep);border-radius:8px;margin:0 auto 12px auto;}
+  .auth-logo{width:56px;height:56px;margin:0 auto 12px auto;display:flex;align-items:center;justify-content:center;}
   .auth-title{text-align:center;font-size:18px;margin-bottom:4px;}
   .auth-sub{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:18px;}
   .auth-error{color:var(--danger);font-size:12.5px;margin-bottom:8px;min-height:14px;}
@@ -116,9 +116,22 @@
 
 <div id="authScreen">
   <div class="auth-card">
-    <div class="auth-logo"></div>
+    <div class="auth-logo">
+      <svg viewBox="0 0 100 100" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2E8B7A"/>
+            <stop offset="1" stop-color="#154F48"/>
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="96" height="96" rx="24" fill="url(#logoGrad)"/>
+        <text x="50" y="68" font-family="Vazirmatn, sans-serif" font-size="54" font-weight="800" fill="#fff" text-anchor="middle">ب</text>
+        <circle cx="78" cy="23" r="9" fill="#C99A3B"/>
+      </svg>
+    </div>
     <div class="auth-title">بازارچی</div>
     <div class="auth-sub">پلتفرم آنلاین خرید و فروش عمده</div>
+    <div class="auth-sub" style="margin-top:-14px;margin-bottom:18px" dir="ltr">پشتیبانی: آقای سید مهدی حسینی — 09179709029</div>
     <div class="auth-tabs">
       <div class="auth-tab active" data-authtab="login">ورود</div>
       <div class="auth-tab" data-authtab="signup">ثبت‌نام</div>
@@ -132,6 +145,42 @@
     <div id="signupInviteWrap" class="field hidden">
       <label>کد دعوت</label>
       <input id="authInvite" placeholder="کدی که از معرف خود گرفته‌اید" style="text-transform:uppercase"/>
+    </div>
+    <div id="signupPhoneWrap" class="row hidden">
+      <div class="field" style="flex:0 0 42%">
+        <label>کشور</label>
+        <select id="authPhoneCountry">
+          <option value="+98">ایران (+۹۸)</option>
+          <option value="+971">امارات (+۹۷۱)</option>
+          <option value="+966">عربستان (+۹۶۶)</option>
+          <option value="+90">ترکیه (+۹۰)</option>
+          <option value="+964">عراق (+۹۶۴)</option>
+          <option value="+974">قطر (+۹۷۴)</option>
+          <option value="+968">عمان (+۹۶۸)</option>
+          <option value="+965">کویت (+۹۶۵)</option>
+          <option value="+973">بحرین (+۹۷۳)</option>
+          <option value="+86">چین (+۸۶)</option>
+          <option value="+91">هند (+۹۱)</option>
+          <option value="+44">بریتانیا (+۴۴)</option>
+          <option value="+1">آمریکا/کانادا (+۱)</option>
+          <option value="other">سایر...</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1">
+        <label>شماره موبایل</label>
+        <input id="authPhone" type="tel" placeholder="9123456789" dir="ltr"/>
+      </div>
+    </div>
+    <div id="signupPhoneOtherWrap" class="field hidden">
+      <label>کد کشور (مثلاً +33)</label>
+      <input id="authPhoneCountryOther" placeholder="+" dir="ltr"/>
+    </div>
+    <div id="signupProfileWrap" class="hidden">
+      <div class="field"><label>شماره موبایل اضطراری (یک شماره دیگر)</label><input id="authEmergencyPhone" type="tel" dir="ltr" placeholder="09xxxxxxxxx"/></div>
+      <div class="field"><label>نام و نام خانوادگی</label><input id="authFullName"/></div>
+      <div class="field"><label>نام فروشگاه / کسب‌وکار</label><input id="authShopName"/></div>
+      <div class="field"><label>آدرس کامل</label><textarea id="authAddress" rows="2"></textarea></div>
+      <div class="field"><label>کد پستی</label><input id="authPostalCode" dir="ltr"/></div>
     </div>
     <div class="field"><label>ایمیل</label><input id="authEmail" type="email" autocomplete="username"/></div>
     <div class="field"><label>رمز عبور</label><input id="authPass" type="password" autocomplete="current-password"/></div>
@@ -147,6 +196,7 @@
     </div>
     <div class="top-row" style="margin-top:-8px;margin-bottom:10px">
       <span class="top-row sub"><span class="live-dot"></span>آنلاین و زنده</span>
+      <span class="top-row sub" id="supportContactBar" style="direction:ltr"></span>
     </div>
     <div class="tabs" id="tabsBar"></div>
   </div>
@@ -180,6 +230,36 @@
     return colors[h%colors.length];
   }
   function initials(name){ return (name||'?').trim().slice(0,2); }
+  function thumbHtml(id, name, imageUrl){
+    if(imageUrl){
+      return `<img src="${imageUrl}" alt="${name}" class="swatch" style="object-fit:cover;background:${colorFor(id)}"/>`;
+    }
+    return `<div class="swatch" style="background:${colorFor(id)}">${initials(name)}</div>`;
+  }
+
+  // عکس را روی خود دستگاه کوچک و فشرده می‌کند و به‌صورت متن (data URL) در
+  // خود Firestore ذخیره می‌کند — بدون نیاز به Firebase Storage و بدون هزینه.
+  function fileToCompressedDataUrl(file, maxDim=640, quality=0.62){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onerror = ()=>reject(new Error('read failed'));
+      reader.onload = (e)=>{
+        const img = new Image();
+        img.onerror = ()=>reject(new Error('image load failed'));
+        img.onload = ()=>{
+          let { width, height } = img;
+          if(width > height && width > maxDim){ height = Math.round(height * (maxDim/width)); width = maxDim; }
+          else if(height > maxDim){ width = Math.round(width * (maxDim/height)); height = maxDim; }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   const statusFlow = ['pending','confirmed','purchased','shipped','delivered'];
   const statusLabels = {
@@ -199,9 +279,16 @@
       authMode = t.getAttribute('data-authtab');
       document.getElementById('signupRoleWrap').classList.toggle('hidden', authMode!=='signup');
       document.getElementById('signupInviteWrap').classList.toggle('hidden', authMode!=='signup');
+      document.getElementById('signupPhoneWrap').classList.toggle('hidden', authMode!=='signup');
+      document.getElementById('signupPhoneOtherWrap').classList.add('hidden');
+      document.getElementById('signupProfileWrap').classList.toggle('hidden', authMode!=='signup');
       document.getElementById('authSubmit').textContent = authMode==='signup' ? 'ثبت‌نام' : 'ورود';
       document.getElementById('authError').textContent='';
     });
+  });
+
+  document.getElementById('authPhoneCountry').addEventListener('change', (e)=>{
+    document.getElementById('signupPhoneOtherWrap').classList.toggle('hidden', e.target.value!=='other');
   });
 
   document.getElementById('authSubmit').addEventListener('click', async ()=>{
@@ -216,6 +303,25 @@
         const inviteCode = document.getElementById('authInvite').value.trim().toUpperCase();
         if(!inviteCode){ errEl.textContent='کد دعوت را وارد کنید.'; return; }
 
+        const countrySelect = document.getElementById('authPhoneCountry').value;
+        const countryCode = countrySelect==='other'
+          ? document.getElementById('authPhoneCountryOther').value.trim()
+          : countrySelect;
+        const phoneNumber = document.getElementById('authPhone').value.trim().replace(/^0+/, '');
+        if(!countryCode || !countryCode.startsWith('+')){ errEl.textContent='کد کشور را وارد کنید (مثلاً +98).'; return; }
+        if(!phoneNumber){ errEl.textContent='شماره موبایل را وارد کنید.'; return; }
+        const fullPhone = countryCode + phoneNumber;
+
+        const fullName = document.getElementById('authFullName').value.trim();
+        const shopName = document.getElementById('authShopName').value.trim();
+        const address = document.getElementById('authAddress').value.trim();
+        const postalCode = document.getElementById('authPostalCode').value.trim();
+        const emergencyPhone = document.getElementById('authEmergencyPhone').value.trim();
+        if(!fullName || !shopName || !address || !postalCode || !emergencyPhone){
+          errEl.textContent = 'همه فیلدهای پروفایل (نام، فروشگاه، آدرس، کد پستی، موبایل اضطراری) الزامی است.';
+          return;
+        }
+
         // کد دعوت را قبل از ساخت حساب بررسی می‌کنیم تا حساب بی‌جهت ساخته نشود.
         const codeRef = db.collection('inviteCodes').doc(inviteCode);
         const codeSnap = await codeRef.get();
@@ -224,7 +330,10 @@
 
         const cred = await auth.createUserWithEmailAndPassword(email, pass);
         await db.collection('users').doc(cred.user.uid).set({
-          email, role, invitedByCode: inviteCode, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          email, role, invitedByCode: inviteCode,
+          phoneCountryCode: countryCode, phoneNumber: phoneNumber, phone: fullPhone,
+          fullName, shopName, address, postalCode, emergencyPhone,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         await codeRef.update({ used:true, usedBy:cred.user.uid, usedByEmail:email, usedAt: firebase.firestore.FieldValue.serverTimestamp() });
       } else {
@@ -268,14 +377,18 @@
 
   // ---------------- TABS PER ROLE ----------------
   const tabsByRole = {
-    admin: [['dashboard','داشبورد'],['pending','در انتظار قیمت'],['orders','سفارش‌ها'],['invites','دعوت دیگران']],
-    importer: [['myproducts','محصولات من'],['invites','دعوت دیگران']],
-    customer: [['catalog','فروشگاه'],['myorders','سفارش‌های من'],['invites','دعوت دیگران']],
+    admin: [['dashboard','داشبورد'],['products','محصولات'],['orders','سفارش‌ها'],['settings','نرخ ارز'],['support','پشتیبانی'],['invites','دعوت دیگران']],
+    importer: [['myproducts','محصولات من'],['support','پشتیبانی'],['invites','دعوت دیگران']],
+    customer: [['catalog','فروشگاه'],['myorders','سفارش‌های من'],['support','پشتیبانی'],['invites','دعوت دیگران']],
   };
   const titleByRole = { admin:'بازارچی · مدیر', importer:'بازارچی · واردکننده', customer:'بازارچی · مشتری' };
+  const SUPPORT_NAME = 'آقای سید مهدی حسینی';
+  const SUPPORT_PHONE = '09179709029';
 
   function setupTabsForRole(){
     document.getElementById('topTitle').textContent = titleByRole[currentRole] || 'بازارچی';
+    const supportBar = document.getElementById('supportContactBar');
+    supportBar.innerHTML = currentRole==='admin' ? '' : `پشتیبانی ${SUPPORT_NAME}: ${SUPPORT_PHONE}`;
     const bar = document.getElementById('tabsBar');
     const tabs = tabsByRole[currentRole] || [];
     bar.innerHTML = tabs.map((t,i)=>`<button class="tab-btn ${i===0?'active':''}" data-tab="${t[0]}">${t[1]}</button>`).join('');
@@ -295,15 +408,150 @@
     root.innerHTML = `<div class="empty">در حال بارگذاری...</div>`;
     if(currentRole==='admin'){
       if(tab==='dashboard') adminDashboard(root);
-      else if(tab==='pending') adminPending(root);
+      else if(tab==='products') adminProducts(root);
       else if(tab==='orders') adminOrders(root);
+      else if(tab==='settings') adminSettings(root);
+      else if(tab==='support') adminSupport(root);
+      else if(tab==='invites') invitesTab(root);
     } else if(currentRole==='importer'){
-      importerProducts(root);
+      if(tab==='myproducts') importerProducts(root);
+      else if(tab==='support') userSupport(root);
+      else if(tab==='invites') invitesTab(root);
     } else if(currentRole==='customer'){
       if(tab==='catalog') customerCatalog(root);
       else if(tab==='myorders') customerOrders(root);
+      else if(tab==='support') userSupport(root);
+      else if(tab==='invites') invitesTab(root);
     }
-    if(tab==='invites') invitesTab(root);
+  }
+
+  // ================= SUPPORT CHAT =================
+  function chatBubbleHtml(messages, mineFrom){
+    if(!messages || messages.length===0) return `<div class="empty">هنوز پیامی وجود ندارد.</div>`;
+    return messages.map(m=>{
+      const mine = m.from===mineFrom;
+      return `<div style="margin-bottom:8px;text-align:${mine?'left':'right'}">
+        <span style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:10px;background:${mine?'var(--teal)':'#EEF2F0'};color:${mine?'#fff':'var(--text)'};font-size:13.5px;white-space:pre-wrap">${m.text}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function userSupport(root){
+    root.innerHTML = `
+      <div class="hint">سؤال یا مشکل خودتان را اینجا بنویسید — ${SUPPORT_NAME} پاسخ می‌دهد.</div>
+      <div class="card" style="display:flex;flex-direction:column;height:55vh">
+        <div id="chat-messages" style="flex:1;overflow-y:auto;margin-bottom:10px"></div>
+        <div class="row" style="margin-bottom:0">
+          <input id="chat-input" placeholder="پیام خود را بنویسید..." style="flex:1"/>
+          <button class="btn btn-primary" id="chat-send">ارسال</button>
+        </div>
+      </div>
+    `;
+    const ticketRef = db.collection('tickets').doc(currentUser.uid);
+    const un = ticketRef.onSnapshot(doc=>{
+      const messages = doc.exists ? (doc.data().messages||[]) : [];
+      const el = root.querySelector('#chat-messages');
+      el.innerHTML = chatBubbleHtml(messages, 'user');
+      el.scrollTop = el.scrollHeight;
+    });
+    unsubscribers.push(un);
+
+    async function send(){
+      const input = root.querySelector('#chat-input');
+      const text = input.value.trim();
+      if(!text) return;
+      input.value='';
+      const msg = { from:'user', text, at: Date.now() };
+      const doc = await ticketRef.get();
+      if(doc.exists){
+        await ticketRef.update({
+          messages: firebase.firestore.FieldValue.arrayUnion(msg),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          unreadForAdmin: true
+        });
+      } else {
+        await ticketRef.set({
+          userId: currentUser.uid, userEmail: currentUser.email, userRole: currentRole,
+          messages: [msg],
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          unreadForAdmin: true, unreadForUser: false
+        });
+      }
+    }
+    root.querySelector('#chat-send').addEventListener('click', send);
+    root.querySelector('#chat-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') send(); });
+  }
+
+  function adminSupport(root){
+    function renderList(){
+      const un = db.collection('tickets').orderBy('updatedAt','desc').onSnapshot(snap=>{
+        root.innerHTML = `<div class="card"><div class="section-label">تیکت‌های پشتیبانی (${snap.size})</div><div id="ticket-list"></div></div>`;
+        const el = root.querySelector('#ticket-list');
+        if(snap.empty){ el.innerHTML = `<div class="empty">هنوز پیامی از کسی دریافت نشده.</div>`; return; }
+        el.innerHTML = snap.docs.map(d=>{
+          const t = d.data();
+          const last = (t.messages||[]).slice(-1)[0];
+          const unread = t.unreadForAdmin ? '<span class="badge badge-pending">جدید</span>' : '';
+          return `<div class="list-item" style="cursor:pointer" data-open="${d.id}">
+            <div class="swatch" style="background:${colorFor(d.id)}">${initials(t.userEmail)}</div>
+            <div style="flex:1">
+              <div class="item-name">${t.userEmail} ${unread}</div>
+              <div class="item-sub">${last ? (last.from==='admin'?'شما: ':'')+last.text.slice(0,60) : ''}</div>
+            </div>
+          </div>`;
+        }).join('');
+        el.querySelectorAll('[data-open]').forEach(item=>{
+          item.addEventListener('click', ()=>{
+            unsubscribers.forEach(u=>u()); unsubscribers=[];
+            openTicket(item.getAttribute('data-open'));
+          });
+        });
+      });
+      unsubscribers.push(un);
+    }
+
+    function openTicket(ticketId){
+      const ref = db.collection('tickets').doc(ticketId);
+      ref.update({ unreadForAdmin:false }).catch(()=>{});
+      const un = ref.onSnapshot(doc=>{
+        const t = doc.data() || {};
+        root.innerHTML = `
+          <button class="btn btn-ghost" id="back-btn" style="margin-bottom:10px">‹ بازگشت به لیست</button>
+          <div class="card" style="display:flex;flex-direction:column;height:55vh">
+            <div class="section-label">گفتگو با ${t.userEmail||''}</div>
+            <div id="chat-messages" style="flex:1;overflow-y:auto;margin-bottom:10px"></div>
+            <div class="row" style="margin-bottom:0">
+              <input id="chat-input" placeholder="پاسخ..." style="flex:1"/>
+              <button class="btn btn-primary" id="chat-send">ارسال</button>
+            </div>
+          </div>
+        `;
+        const el = root.querySelector('#chat-messages');
+        el.innerHTML = chatBubbleHtml(t.messages, 'admin');
+        el.scrollTop = el.scrollHeight;
+
+        root.querySelector('#back-btn').addEventListener('click', ()=>{
+          unsubscribers.forEach(u=>u()); unsubscribers=[];
+          renderList();
+        });
+        async function send(){
+          const input = root.querySelector('#chat-input');
+          const text = input.value.trim();
+          if(!text) return;
+          input.value='';
+          await ref.update({
+            messages: firebase.firestore.FieldValue.arrayUnion({from:'admin', text, at:Date.now()}),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            unreadForUser: true
+          });
+        }
+        root.querySelector('#chat-send').addEventListener('click', send);
+        root.querySelector('#chat-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') send(); });
+      });
+      unsubscribers.push(un);
+    }
+
+    renderList();
   }
 
   // ================= INVITE CODES (all roles) =================
@@ -383,42 +631,125 @@
     unsubscribers.push(un1);
   }
 
-  function adminPending(root){
-    const un = db.collection('importerProducts').where('sellPrice','==',0).onSnapshot(snap=>{
-      root.innerHTML = `<div class="card"><div class="section-label">محصولاتی که واردکننده‌ها ثبت کرده‌اند و منتظر قیمت‌گذاری شما هستند</div><div id="pend-list"></div></div>`;
-      const el = root.querySelector('#pend-list');
-      if(snap.empty){ el.innerHTML = `<div class="empty">فعلاً محصول جدیدی در انتظار قیمت‌گذاری نیست.</div>`; return; }
-      el.innerHTML = snap.docs.map(d=>{
+  // قیمت‌گذاری کاملاً خودکار است (سود ۳٪ + هزینه پست بر اساس وزن)،
+  // پس این تب فقط برای دیدن و بررسی محصولات است، نه قیمت‌گذاری دستی.
+  function adminProducts(root){
+    let editingId = null;
+    const un = db.collection('importerProducts').orderBy('createdAt','desc').onSnapshot(async (snap)=>{
+      root.innerHTML = `
+        <div class="hint">قیمت فروش به‌طور خودکار محاسبه می‌شود: قیمت واردکننده + ۳٪ سود + هزینه پست (۱۳۰,۰۰۰ تومان به ازای هر کیلوگرم).</div>
+        <div class="card"><div class="section-label">همه محصولات (${snap.size})</div><div id="admin-prod-list"></div></div>
+      `;
+      const el = root.querySelector('#admin-prod-list');
+      if(snap.empty){ el.innerHTML = `<div class="empty">هنوز محصولی ثبت نشده.</div>`; return; }
+      const rows = await Promise.all(snap.docs.map(async (d)=>{
         const p = d.data();
+        const profile = await getUserProfile(p.importerId);
+        return {id:d.id, p, profile};
+      }));
+
+      if(editingId){
+        const row = rows.find(r=>r.id===editingId);
+        if(row){
+          const p = row.p;
+          el.innerHTML = `
+            <div class="item-name" style="margin-bottom:10px">ویرایش محصول</div>
+            <div class="field"><label>نام محصول</label><input id="ep-name" value="${p.name}"/></div>
+            <div class="field"><label>ساخت کدام کشور</label><input id="ep-country" value="${p.countryOfOrigin||''}"/></div>
+            <div class="row">
+              <div class="field"><label>وزن/حجم هر عدد</label><input id="ep-weight" type="number" value="${p.weightValue}"/></div>
+              <div class="field" style="flex:0 0 40%"><label>واحد</label>
+                <select id="ep-weight-unit">
+                  <option value="ml" ${p.weightUnit==='ml'?'selected':''}>میلی‌لیتر</option>
+                  <option value="g" ${p.weightUnit==='g'?'selected':''}>گرم</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field"><label>تعداد رایحه</label><input id="ep-fragrances" type="number" value="${p.fragranceCount}"/></div>
+              <div class="field"><label>موجودی</label><input id="ep-stock" type="number" value="${p.stock}"/></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>قیمت هر عدد</label><input id="ep-cost" type="number" value="${p.costAmount||p.unitCostPrice}"/></div>
+              <div class="field" style="flex:0 0 42%"><label>ارز</label>
+                <select id="ep-currency">
+                  <option value="IRT" ${(p.costCurrency||'IRT')==='IRT'?'selected':''}>تومان</option>
+                  <option value="USD" ${p.costCurrency==='USD'?'selected':''}>دلار آمریکا</option>
+                  <option value="AED" ${p.costCurrency==='AED'?'selected':''}>درهم امارات</option>
+                </select>
+              </div>
+            </div>
+            <div class="item-actions" style="margin-top:10px">
+              <button class="btn btn-primary" id="ep-save">ذخیره تغییرات</button>
+              <button class="btn btn-ghost" id="ep-cancel">انصراف</button>
+            </div>
+          `;
+          el.querySelector('#ep-cancel').addEventListener('click', ()=>{ editingId=null; adminProducts(root); });
+          el.querySelector('#ep-save').addEventListener('click', async ()=>{
+            const name = el.querySelector('#ep-name').value.trim();
+            const countryOfOrigin = el.querySelector('#ep-country').value.trim();
+            const weightValue = Number(el.querySelector('#ep-weight').value);
+            const weightUnit = el.querySelector('#ep-weight-unit').value;
+            const fragranceCount = Number(el.querySelector('#ep-fragrances').value)||1;
+            const stock = Number(el.querySelector('#ep-stock').value)||0;
+            const costAmount = Number(el.querySelector('#ep-cost').value);
+            const costCurrency = el.querySelector('#ep-currency').value;
+            if(!name || !weightValue || !costAmount){ toast('نام، وزن و قیمت را کامل کنید'); return; }
+
+            const rates = await getRates();
+            const unitCostPrice = toToman(costAmount, costCurrency, rates);
+            const { shippingPerUnit, marginPerUnit, sellPrice } = computePricing(unitCostPrice, weightValue);
+            const minOrderQty = fragranceCount * DOZEN;
+
+            await db.collection('importerProducts').doc(editingId).update({
+              name, countryOfOrigin, weightValue, weightUnit, fragranceCount, minOrderQty,
+              stock, costAmount, costCurrency, unitCostPrice, marginPerUnit, shippingPerUnit, sellPrice
+            });
+            await db.collection('catalog').doc(editingId).update({
+              name, countryOfOrigin, weightValue, weightUnit, fragranceCount, minOrderQty, stock, sellPrice
+            });
+            editingId = null;
+            toast('محصول ویرایش شد');
+          });
+        }
+        return;
+      }
+
+      el.innerHTML = rows.map(({id,p,profile})=>{
+        const weightLabel = p.weightUnit==='ml' ? 'میل' : 'گرم';
         return `
         <div class="list-item">
-          <div class="swatch" style="background:${colorFor(d.id)}">${initials(p.name)}</div>
+          ${thumbHtml(id, p.name, p.imageUrl)}
           <div style="flex:1">
             <div class="item-name">${p.name}</div>
-            <div class="item-sub">واردکننده: ${p.importerEmail} · موجودی ${fmt(p.stock)} · خرید: <span class="price-cost">${fmt(p.costPrice)}</span></div>
-            <div class="row" style="margin-top:8px">
-              <div class="field" style="margin-bottom:0"><input type="number" placeholder="قیمت فروش" data-priceinput="${d.id}"/></div>
-              <button class="btn btn-primary" data-publish="${d.id}">انتشار در فروشگاه</button>
-            </div>
+            <div class="item-sub">واردکننده: ${profile.fullName||p.importerEmail} ${profile.shopName?('· '+profile.shopName):''} · موبایل: ${profile.phone||'—'}</div>
+            <div class="item-sub">ساخت: ${p.countryOfOrigin||'—'} · ${fmt(p.weightValue)} ${weightLabel} · ${fmt(p.fragranceCount)} رایحه</div>
+            <div class="item-sub">حداقل سفارش: ${fmt(p.minOrderQty)} عدد · موجودی ${fmt(p.stock)}</div>
+            <div class="item-sub">خرید: <span class="price-cost">${fmt(p.costAmount||p.unitCostPrice)} ${currencyLabel[p.costCurrency]||'تومان'}</span> + سود ۳٪: <span class="price-margin">${fmt(p.marginPerUnit)}</span> + پست: <span class="price-margin">${fmt(p.shippingPerUnit)}</span> = فروش: <span class="price-sell">${fmt(p.sellPrice)}</span></div>
+            <div class="item-actions"><button class="btn btn-ghost" data-edit-prod="${id}">ویرایش</button></div>
           </div>
         </div>`;
       }).join('');
-      el.querySelectorAll('[data-publish]').forEach(btn=>{
-        btn.addEventListener('click', async ()=>{
-          const id = btn.getAttribute('data-publish');
-          const input = el.querySelector(`[data-priceinput="${id}"]`);
-          const sellPrice = Number(input.value);
-          if(!sellPrice||sellPrice<=0){ toast('قیمت فروش را وارد کنید'); return; }
-          const p = snap.docs.find(x=>x.id===id).data();
-          await db.collection('importerProducts').doc(id).update({sellPrice});
-          await db.collection('catalog').doc(id).set({
-            name:p.name, sellPrice, stock:p.stock, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          toast('محصول منتشر شد');
+
+      el.querySelectorAll('[data-edit-prod]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          editingId = btn.getAttribute('data-edit-prod');
+          adminProducts(root);
         });
       });
     });
     unsubscribers.push(un);
+  }
+
+  const profileCache = {};
+  async function getUserProfile(uid){
+    if(profileCache[uid]) return profileCache[uid];
+    try{
+      const doc = await db.collection('users').doc(uid).get();
+      const data = doc.exists ? doc.data() : {};
+      profileCache[uid] = data;
+      return data;
+    }catch(e){ return {}; }
   }
 
   async function resolveCostPrices(items){
@@ -429,7 +760,7 @@
       let cost = it.costPrice||0;
       try{
         const doc = await db.collection('importerProducts').doc(it.productId).get();
-        if(doc.exists) cost = doc.data().costPrice||0;
+        if(doc.exists) cost = doc.data().unitCostPrice||0;
       }catch(e){}
       out.push({...it, costPrice:cost});
     }
@@ -444,9 +775,10 @@
       const rows = await Promise.all(snap.docs.map(async (d)=>{
         const o = d.data();
         o.items = await resolveCostPrices(o.items);
-        return {id:d.id, o};
+        const profile = await getUserProfile(o.customerId);
+        return {id:d.id, o, profile};
       }));
-      el.innerHTML = rows.map(({id,o})=>{
+      el.innerHTML = rows.map(({id,o,profile})=>{
         const d = {id};
         const total = o.items.reduce((s,it)=>s+it.sellPrice*it.qty,0);
         const cost = o.items.reduce((s,it)=>s+it.costPrice*it.qty,0);
@@ -456,7 +788,10 @@
         return `
         <div class="list-item">
           <div style="flex:1">
-            <div class="item-name">${o.customerEmail} <span class="badge ${cls}">${label}</span></div>
+            <div class="item-name">${profile.fullName||o.customerEmail} <span class="badge ${cls}">${label}</span></div>
+            <div class="item-sub">${profile.shopName?('فروشگاه: '+profile.shopName+' · '):''}${o.customerEmail}</div>
+            <div class="item-sub">موبایل: ${profile.phone||'—'} ${profile.emergencyPhone?('· اضطراری: '+profile.emergencyPhone):''}</div>
+            <div class="item-sub">آدرس: ${profile.address||'—'} ${profile.postalCode?('· کدپستی: '+profile.postalCode):''}</div>
             <div class="item-sub">${o.items.map(it=>it.name+' ×'+it.qty).join('، ')}</div>
             <div class="item-sub">فروش: <span class="price-sell">${fmt(total)}</span> · خرید: <span class="price-cost">${fmt(cost)}</span> · سود: <span class="price-margin">${fmt(total-cost)}</span></div>
             ${nextLabel?`<div class="item-actions"><button class="btn btn-amber" data-advance="${d.id}" data-next="${statusFlow[idx+1]}">${nextLabel}</button></div>`:''}
@@ -472,38 +807,220 @@
     unsubscribers.push(un);
   }
 
+  function adminSettings(root){
+    root.innerHTML = `<div class="empty">در حال بارگذاری...</div>`;
+    getRates().then(rates=>{
+      root.innerHTML = `
+        <div class="hint">با تغییر این دو عدد، قیمت همه‌ی محصولاتی که به دلار یا درهم ثبت شده‌اند، خودکار دوباره محاسبه می‌شوند — نیازی به ویرایش دستی محصولات نیست.</div>
+        <div class="card">
+          <div class="section-label">نرخ تبدیل ارز به تومان</div>
+          <div class="field"><label>هر ۱ دلار آمریکا (تومان)</label><input id="rate-usd" type="number" value="${rates.usdToToman||''}"/></div>
+          <div class="field"><label>هر ۱ درهم امارات (تومان)</label><input id="rate-aed" type="number" value="${rates.aedToToman||''}"/></div>
+          <button class="btn btn-primary btn-block" id="rate-save">ذخیره و به‌روزرسانی همه قیمت‌ها</button>
+          <div id="rate-status" class="item-sub" style="margin-top:8px"></div>
+        </div>
+      `;
+      root.querySelector('#rate-save').addEventListener('click', async ()=>{
+        const usdToToman = Number(root.querySelector('#rate-usd').value)||0;
+        const aedToToman = Number(root.querySelector('#rate-aed').value)||0;
+        const btn = root.querySelector('#rate-save');
+        const status = root.querySelector('#rate-status');
+        btn.disabled = true; btn.textContent = 'در حال به‌روزرسانی...';
+
+        await db.collection('settings').doc('exchangeRates').set({
+          usdToToman, aedToToman, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        ratesCache = { usdToToman, aedToToman };
+
+        // بازمحاسبه‌ی همه محصولاتی که به دلار یا درهم ثبت شده‌اند
+        const snap = await db.collection('importerProducts').get();
+        const toUpdate = snap.docs.filter(d=>{
+          const c = d.data().costCurrency;
+          return c === 'USD' || c === 'AED';
+        });
+        let count = 0;
+        for(const d of toUpdate){
+          const p = d.data();
+          const unitCostPrice = toToman(p.costAmount, p.costCurrency, ratesCache);
+          const { shippingPerUnit, marginPerUnit, sellPrice } = computePricing(unitCostPrice, p.weightValue);
+          await db.collection('importerProducts').doc(d.id).update({ unitCostPrice, marginPerUnit, shippingPerUnit, sellPrice });
+          await db.collection('catalog').doc(d.id).update({ sellPrice });
+          count++;
+          status.textContent = `به‌روزرسانی شد: ${count} از ${toUpdate.length}`;
+        }
+        btn.disabled = false; btn.textContent = 'ذخیره و به‌روزرسانی همه قیمت‌ها';
+        status.textContent = `تمام شد — ${count} محصول با نرخ جدید به‌روزرسانی شد.`;
+        toast('نرخ ارز و قیمت‌ها به‌روزرسانی شد');
+      });
+    });
+  }
+
   // ================= IMPORTER =================
+  const SHIPPING_PER_KG = 130000;
+  const MARGIN_RATE = 0.03;
+  const DOZEN = 12;
+
+  function computePricing(unitCostPrice, weightValue){
+    const weightKg = (weightValue||0) / 1000; // گرم یا میل، هر دو تقریباً معادل گرم محاسبه می‌شود
+    const shippingPerUnit = Math.round(weightKg * SHIPPING_PER_KG);
+    const marginPerUnit = Math.round((unitCostPrice||0) * MARGIN_RATE);
+    const sellPrice = (unitCostPrice||0) + marginPerUnit + shippingPerUnit;
+    return { shippingPerUnit, marginPerUnit, sellPrice };
+  }
+
+  // ---------------- نرخ ارز ----------------
+  let ratesCache = null;
+  async function getRates(){
+    if(ratesCache) return ratesCache;
+    try{
+      const doc = await db.collection('settings').doc('exchangeRates').get();
+      ratesCache = doc.exists ? doc.data() : { usdToToman: 0, aedToToman: 0 };
+    }catch(e){
+      ratesCache = { usdToToman: 0, aedToToman: 0 };
+    }
+    return ratesCache;
+  }
+  function toToman(amount, currency, rates){
+    amount = Number(amount)||0;
+    if(currency === 'USD') return Math.round(amount * (rates.usdToToman||0));
+    if(currency === 'AED') return Math.round(amount * (rates.aedToToman||0));
+    return Math.round(amount);
+  }
+  const currencyLabel = { IRT:'تومان', USD:'دلار آمریکا', AED:'درهم امارات' };
+
   function importerProducts(root){
     root.innerHTML = `
-      <div class="hint">شما فقط محصولات خودتان را می‌بینید. اطلاعات مشتری نهایی هرگز به شما نمایش داده نمی‌شود.</div>
+      <div class="hint">شما فقط محصولات خودتان را می‌بینید. اطلاعات مشتری نهایی هرگز به شما نمایش داده نمی‌شود. قیمت فروش نهایی به‌طور خودکار محاسبه و همان لحظه در فروشگاه منتشر می‌شود.</div>
       <div class="card">
         <div class="section-label">افزودن محصول جدید</div>
-        <div class="field"><label>نام محصول</label><input id="ip-name" placeholder="مثلاً ژیلت فیوژن ۵ تیغه"/></div>
+        <div class="field"><label>عکس محصول</label><input id="ip-image" type="file" accept="image/*"/></div>
+        <div class="field"><label>نام محصول</label><input id="ip-name" placeholder="مثلاً اسپری رکسونا ۲۰۰ میل"/></div>
+        <div class="field"><label>ساخت کدام کشور</label><input id="ip-country" placeholder="مثلاً امارات"/></div>
         <div class="row">
-          <div class="field"><label>قیمت خرید عمده (تومان)</label><input id="ip-cost" type="number"/></div>
-          <div class="field"><label>موجودی</label><input id="ip-stock" type="number"/></div>
+          <div class="field"><label>وزن/حجم هر عدد</label><input id="ip-weight" type="number" placeholder="200"/></div>
+          <div class="field" style="flex:0 0 40%">
+            <label>واحد</label>
+            <select id="ip-weight-unit"><option value="ml">میلی‌لیتر</option><option value="g">گرم</option></select>
+          </div>
         </div>
-        <button class="btn btn-primary btn-block" id="ip-add">افزودن</button>
+        <div class="row">
+          <div class="field"><label>تعداد رایحه‌های محصول</label><input id="ip-fragrances" type="number" placeholder="مثلاً 15" value="1"/></div>
+          <div class="field"><label>موجودی کل (عدد)</label><input id="ip-stock" type="number"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>قیمت هر عدد نزد شما</label><input id="ip-cost" type="number" placeholder="120000"/></div>
+          <div class="field" style="flex:0 0 42%">
+            <label>ارز</label>
+            <select id="ip-currency">
+              <option value="IRT">تومان</option>
+              <option value="USD">دلار آمریکا</option>
+              <option value="AED">درهم امارات</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider" style="border-top:1px solid var(--line);margin:12px 0"></div>
+        <div id="ip-preview" class="item-sub"></div>
+
+        <button class="btn btn-primary btn-block" id="ip-add" style="margin-top:10px">افزودن و انتشار در فروشگاه</button>
       </div>
       <div class="card">
         <div class="section-label">محصولات ثبت‌شده شما</div>
         <div id="ip-list"></div>
       </div>
     `;
+
+    let rates = { usdToToman:0, aedToToman:0 };
+    getRates().then(r=>{ rates = r; updatePreview(); });
+
+    function updatePreview(){
+      const amount = Number(root.querySelector('#ip-cost').value)||0;
+      const currency = root.querySelector('#ip-currency').value;
+      const cost = toToman(amount, currency, rates);
+      const weight = Number(root.querySelector('#ip-weight').value)||0;
+      const fragrances = Number(root.querySelector('#ip-fragrances').value)||1;
+      const { shippingPerUnit, marginPerUnit, sellPrice } = computePricing(cost, weight);
+      const minOrderQty = fragrances * DOZEN;
+      const rateNote = currency!=='IRT' ? `(معادل ${fmt(cost)} تومان با نرخ فعلی)<br/>` : '';
+      root.querySelector('#ip-preview').innerHTML =
+        rateNote +
+        `سود ما (۳٪): <span class="price-margin">${fmt(marginPerUnit)}</span> تومان · هزینه پست: <span class="price-margin">${fmt(shippingPerUnit)}</span> تومان<br/>` +
+        `<b>قیمت فروش نهایی به مشتری: <span class="price-sell">${fmt(sellPrice)}</span> تومان</b><br/>` +
+        `حداقل سفارش این محصول: <b>${fmt(minOrderQty)} عدد</b> (${fmt(fragrances)} رایحه × ۱۲ عدد)`;
+    }
+    ['#ip-cost','#ip-weight','#ip-fragrances','#ip-currency'].forEach(sel=>{
+      root.querySelector(sel).addEventListener('input', updatePreview);
+      root.querySelector(sel).addEventListener('change', updatePreview);
+    });
+    updatePreview();
+
     root.querySelector('#ip-add').addEventListener('click', async ()=>{
       const name = root.querySelector('#ip-name').value.trim();
-      const cost = Number(root.querySelector('#ip-cost').value);
+      const countryOfOrigin = root.querySelector('#ip-country').value.trim();
+      const weightValue = Number(root.querySelector('#ip-weight').value);
+      const weightUnit = root.querySelector('#ip-weight-unit').value;
+      const fragranceCount = Number(root.querySelector('#ip-fragrances').value) || 1;
       const stock = Number(root.querySelector('#ip-stock').value)||0;
-      if(!name||!cost){ toast('نام و قیمت خرید را وارد کنید'); return; }
-      await db.collection('importerProducts').add({
+      const costAmount = Number(root.querySelector('#ip-cost').value);
+      const costCurrency = root.querySelector('#ip-currency').value;
+      const imageFile = root.querySelector('#ip-image').files[0];
+      if(!name || !countryOfOrigin || !weightValue || !costAmount){
+        toast('نام، کشور سازنده، وزن و قیمت را وارد کنید'); return;
+      }
+      if(!imageFile){ toast('عکس محصول را انتخاب کنید'); return; }
+
+      const addBtn = root.querySelector('#ip-add');
+      addBtn.disabled = true; addBtn.textContent = 'در حال آماده‌سازی عکس...';
+
+      const currentRates = await getRates();
+      const unitCostPrice = toToman(costAmount, costCurrency, currentRates);
+      const { shippingPerUnit, marginPerUnit, sellPrice } = computePricing(unitCostPrice, weightValue);
+      const minOrderQty = fragranceCount * DOZEN;
+      const docRef = db.collection('importerProducts').doc();
+
+      let imageUrl = '';
+      try{
+        imageUrl = await fileToCompressedDataUrl(imageFile);
+      }catch(e){
+        toast('پردازش عکس ناموفق بود، عکس دیگری را امتحان کنید');
+        addBtn.disabled = false; addBtn.textContent = 'افزودن و انتشار در فروشگاه';
+        return;
+      }
+      addBtn.textContent = 'در حال ثبت...';
+
+      if(imageUrl.length > 900000){
+        // اگر عکس بعد از فشرده‌سازی هنوز خیلی بزرگ بود (عکس با کیفیت خیلی بالا)، دوباره فشرده‌تر می‌کنیم.
+        try{ imageUrl = await fileToCompressedDataUrl(imageFile, 420, 0.45); }catch(e){}
+      }
+
+      const payload = {
         importerId: currentUser.uid, importerEmail: currentUser.email,
-        name, costPrice:cost, stock, sellPrice:0,
+        name, countryOfOrigin, weightValue, weightUnit, fragranceCount, minOrderQty,
+        stock, costAmount, costCurrency, unitCostPrice, marginPerUnit, shippingPerUnit, sellPrice, imageUrl,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      };
+      try{
+        await docRef.set(payload);
+        await db.collection('catalog').doc(docRef.id).set({
+          name, countryOfOrigin, weightValue, weightUnit, fragranceCount, minOrderQty,
+          stock, sellPrice, imageUrl, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }catch(e){
+        toast('ثبت ناموفق بود — عکس را با کیفیت پایین‌تر امتحان کنید');
+        addBtn.disabled = false; addBtn.textContent = 'افزودن و انتشار در فروشگاه';
+        return;
+      }
+
       root.querySelector('#ip-name').value='';
-      root.querySelector('#ip-cost').value='';
+      root.querySelector('#ip-country').value='';
+      root.querySelector('#ip-weight').value='';
+      root.querySelector('#ip-fragrances').value='1';
       root.querySelector('#ip-stock').value='';
-      toast('محصول ثبت شد و برای قیمت‌گذاری ارسال شد');
+      root.querySelector('#ip-cost').value='';
+      root.querySelector('#ip-image').value='';
+      updatePreview();
+      addBtn.disabled = false; addBtn.textContent = 'افزودن و انتشار در فروشگاه';
+      toast('محصول ثبت و در فروشگاه منتشر شد');
     });
 
     const un = db.collection('importerProducts').where('importerId','==',currentUser.uid).onSnapshot(snap=>{
@@ -511,13 +1028,14 @@
       if(snap.empty){ el.innerHTML = `<div class="empty">هنوز محصولی ثبت نکرده‌اید.</div>`; return; }
       el.innerHTML = snap.docs.map(d=>{
         const p = d.data();
-        const [statusText, cls] = p.sellPrice>0 ? ['در فروشگاه فعال است','badge-delivered'] : ['در انتظار قیمت‌گذاری واسطه','badge-waiting'];
+        const weightLabel = p.weightUnit==='ml' ? 'میل' : 'گرم';
         return `
         <div class="list-item">
-          <div class="swatch" style="background:${colorFor(d.id)}">${initials(p.name)}</div>
+          ${thumbHtml(d.id, p.name, p.imageUrl)}
           <div style="flex:1">
-            <div class="item-name">${p.name} <span class="badge ${cls}">${statusText}</span></div>
-            <div class="item-sub">قیمت خرید ثبت‌شده: <span class="price-cost">${fmt(p.costPrice)}</span> · موجودی ${fmt(p.stock)}</div>
+            <div class="item-name">${p.name} <span class="badge badge-delivered">فعال در فروشگاه</span></div>
+            <div class="item-sub">${p.countryOfOrigin} · ${fmt(p.weightValue)} ${weightLabel} · ${fmt(p.fragranceCount)} رایحه · حداقل سفارش ${fmt(p.minOrderQty)} عدد</div>
+            <div class="item-sub">قیمت شما: <span class="price-cost">${fmt(p.costAmount||p.unitCostPrice)} ${currencyLabel[p.costCurrency]||'تومان'}</span> (≈${fmt(p.unitCostPrice)} تومان) → فروش نهایی: <span class="price-sell">${fmt(p.sellPrice)}</span> · موجودی ${fmt(p.stock)}</div>
           </div>
         </div>`;
       }).join('');
@@ -529,32 +1047,46 @@
   let cart = {};
   function customerCatalog(root){
     root.innerHTML = `
-      <div class="hint">همه محصولات از منابع مختلف، در یک فروشگاه واحد.</div>
+      <div class="hint">📦 هزینه و مسئولیت ارسال به سراسر کشور، از مبدأ تا مقصد، بر عهده‌ی ماست و در قیمت‌های زیر لحاظ شده — نیازی به پرداخت جداگانه بابت پست نیست.</div>
       <div class="card"><div class="section-label">فروشگاه</div><div id="cat-list"></div></div>
       <div id="cart-area"></div>
     `;
     const un = db.collection('catalog').onSnapshot(snap=>{
       const products = snap.docs.map(d=>({id:d.id, ...d.data()}));
       const el = root.querySelector('#cat-list');
-      el.innerHTML = products.length===0 ? `<div class="empty">فعلاً کالایی موجود نیست.</div>` : products.map(p=>`
+      el.innerHTML = products.length===0 ? `<div class="empty">فعلاً کالایی موجود نیست.</div>` : products.map(p=>{
+        const weightLabel = p.weightUnit==='ml' ? 'میل' : 'گرم';
+        const qty = cart[p.id]||0;
+        return `
         <div class="list-item">
-          <div class="swatch" style="background:${colorFor(p.id)}">${initials(p.name)}</div>
+          ${thumbHtml(p.id, p.name, p.imageUrl)}
           <div style="flex:1">
             <div class="item-name">${p.name}</div>
-            <div class="item-sub">قیمت: <span class="price-sell">${fmt(p.sellPrice)} تومان</span> · موجودی ${fmt(p.stock)}</div>
+            <div class="item-sub">ساخت: ${p.countryOfOrigin||'—'} · ${fmt(p.weightValue)} ${weightLabel} · ${fmt(p.fragranceCount)} رایحه</div>
+            <div class="item-sub">قیمت هر عدد: <span class="price-sell">${fmt(p.sellPrice)} تومان</span> · موجودی ${fmt(p.stock)}</div>
+            <div class="item-sub">حداقل سفارش: <b>${fmt(p.minOrderQty)} عدد</b> (۱۲ عدد از هر رایحه)</div>
           </div>
           <div class="qty-ctrl">
             <button data-dec="${p.id}">−</button>
-            <span>${cart[p.id]||0}</span>
+            <span>${qty}</span>
             <button data-inc="${p.id}">+</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
       el.querySelectorAll('[data-inc]').forEach(b=>b.addEventListener('click', ()=>{
-        const id=b.getAttribute('data-inc'); cart[id]=(cart[id]||0)+1; renderCart(root, products);
+        const id=b.getAttribute('data-inc');
+        const p = products.find(x=>x.id===id);
+        const min = p.minOrderQty || DOZEN;
+        cart[id] = cart[id] ? cart[id] + DOZEN : min;
+        renderCart(root, products);
       }));
       el.querySelectorAll('[data-dec]').forEach(b=>b.addEventListener('click', ()=>{
-        const id=b.getAttribute('data-dec'); cart[id]=Math.max(0,(cart[id]||0)-1); renderCart(root, products);
+        const id=b.getAttribute('data-dec');
+        const p = products.find(x=>x.id===id);
+        const min = p.minOrderQty || DOZEN;
+        const next = (cart[id]||0) - DOZEN;
+        cart[id] = next < min ? 0 : next;
+        renderCart(root, products);
       }));
       renderCart(root, products);
     });
@@ -585,7 +1117,7 @@
       // productId only for cost; the admin view resolves the real cost price itself.
       const orderItems = ids.map(id=>{
         const p = products.find(x=>x.id===id);
-        return {productId:id, name:p.name, qty:cart[id], sellPrice:p.sellPrice, costPrice:0};
+        return {productId:id, name:p.name, qty:cart[id], sellPrice:p.sellPrice, costPrice:0, minOrderQty:p.minOrderQty||DOZEN, imageUrl:p.imageUrl||''};
       });
       await db.collection('orders').add({
         customerId: currentUser.uid, customerEmail: currentUser.email,
@@ -598,6 +1130,9 @@
     });
   }
 
+  let editingOrderId = null;
+  let editCart = {};
+
   function customerOrders(root){
     root.innerHTML = `<div class="card"><div class="section-label">سفارش‌های شما</div><div id="myord-list"></div></div>`;
     const un = db.collection('orders').where('customerId','==',currentUser.uid).orderBy('createdAt','desc').onSnapshot(snap=>{
@@ -607,11 +1142,100 @@
         const o = d.data();
         const total = o.items.reduce((s,it)=>s+it.sellPrice*it.qty,0);
         const [label,cls] = statusLabels[o.status];
+        const canEdit = o.status === 'pending';
+
+        if(editingOrderId === d.id){
+          const items = o.items.map(it=>({...it, qty: editCart[it.productId] ?? it.qty}));
+          const editTotal = items.reduce((s,it)=>s+it.sellPrice*it.qty,0);
+          return `<div class="list-item" style="display:block">
+            <div class="item-name" style="margin-bottom:8px">ویرایش سفارش</div>
+            ${items.map(it=>`
+              <div class="list-item">
+                ${thumbHtml(it.productId, it.name, it.imageUrl)}
+                <div style="flex:1">
+                  <div class="item-name">${it.name}</div>
+                  <div class="item-sub">${fmt(it.sellPrice)} تومان · حداقل ${fmt(it.minOrderQty)} عدد</div>
+                </div>
+                <div class="qty-ctrl">
+                  <button data-edec="${it.productId}">−</button>
+                  <span>${it.qty}</span>
+                  <button data-einc="${it.productId}">+</button>
+                </div>
+              </div>
+            `).join('')}
+            <div class="kv stack-total"><span>جمع کل</span><span>${fmt(editTotal)} تومان</span></div>
+            <div class="item-actions" style="margin-top:10px">
+              <button class="btn btn-primary" data-save-edit="${d.id}">ذخیره تغییرات</button>
+              <button class="btn btn-ghost" data-cancel-edit="1">انصراف از ویرایش</button>
+            </div>
+          </div>`;
+        }
+
         return `<div class="list-item"><div style="flex:1">
           <div class="item-name">${o.items.map(it=>it.name+' ×'+it.qty).join('، ')} <span class="badge ${cls}">${label}</span></div>
           <div class="item-sub">مبلغ: ${fmt(total)} تومان</div>
+          ${canEdit ? `<div class="item-actions">
+            <button class="btn btn-ghost" data-edit-order="${d.id}">ویرایش</button>
+            <button class="btn btn-danger" data-cancel-order="${d.id}">لغو سفارش</button>
+          </div>` : ''}
         </div></div>`;
       }).join('');
+
+      el.querySelectorAll('[data-edit-order]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-edit-order');
+          const o = snap.docs.find(x=>x.id===id).data();
+          editingOrderId = id;
+          editCart = {};
+          o.items.forEach(it=>{ editCart[it.productId] = it.qty; });
+          customerOrders(root);
+        });
+      });
+      el.querySelectorAll('[data-cancel-edit]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{ editingOrderId=null; editCart={}; customerOrders(root); });
+      });
+      el.querySelectorAll('[data-einc]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const pid = btn.getAttribute('data-einc');
+          editCart[pid] = (editCart[pid]||0) + DOZEN;
+          customerOrders(root);
+        });
+      });
+      el.querySelectorAll('[data-edec]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const pid = btn.getAttribute('data-edec');
+          const o = snap.docs.find(x=>x.id===editingOrderId).data();
+          const item = o.items.find(it=>it.productId===pid);
+          const min = item ? item.minOrderQty : DOZEN;
+          const next = (editCart[pid]||0) - DOZEN;
+          editCart[pid] = next < min ? 0 : next;
+          customerOrders(root);
+        });
+      });
+      el.querySelectorAll('[data-save-edit]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const id = btn.getAttribute('data-save-edit');
+          const o = snap.docs.find(x=>x.id===id).data();
+          const newItems = o.items
+            .map(it=>({...it, qty: editCart[it.productId] ?? it.qty}))
+            .filter(it=>it.qty > 0);
+          if(newItems.length===0){
+            if(!confirm('همه اقلام حذف شدند — کل سفارش لغو شود؟')) return;
+            await db.collection('orders').doc(id).delete();
+          } else {
+            await db.collection('orders').doc(id).update({ items: newItems });
+          }
+          editingOrderId = null; editCart = {};
+          toast('سفارش به‌روزرسانی شد');
+        });
+      });
+      el.querySelectorAll('[data-cancel-order]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          if(!confirm('این سفارش لغو شود؟')) return;
+          await db.collection('orders').doc(btn.getAttribute('data-cancel-order')).delete();
+          toast('سفارش لغو شد');
+        });
+      });
     });
     unsubscribers.push(un);
   }
